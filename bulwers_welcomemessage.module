@@ -1,0 +1,119 @@
+<?php
+/**
+ * @file
+ * Allows users to show promoted nodes
+ */
+function bulwers_welcomemessage_permission() {
+	return array(
+		'administer welcomemessage' => array(
+		'title' => t('Administer Welcome message module'),
+		'description' => t('Manage welcome message plugin'),
+		),
+	);
+}
+ 
+function bulwers_welcomemessage_menu() {
+    $items['admin/config/welcomemessage'] = array(
+		'title' => 'Welcome message settings',
+		'type' => MENU_NORMAL_ITEM,
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('bulwers_welcomemessage_admin_form'),
+		'access arguments' => array('administer welcomemessage'),
+	);
+	
+	$items['form-feedback'] = array(
+	'title' => 'Please fill our feedback form.',
+	'type' => MENU_NORMAL_ITEM,
+	'access arguments' => array('submit form_feedback'),
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('form_feedback_form')
+	);
+	
+    return $items;
+}
+
+function form_feedback_form($form, &$form_state) {
+	
+	$form['author'] = array(
+	'#type' => 'textfield',
+	'#title' => t('Your name'),
+	'#size' => 10,
+	'#maxlength' => 255,
+	'#required' => TRUE,
+	'#description' => t('Please enter your name')
+	);
+	
+	$form['message'] = array(
+	'#type' => 'textarea',
+	'#title' => t('Leave a feedback message here'),
+	'#size' => 60,
+	'#maxlength' => 255,
+	'#required' => TRUE,
+	'#description' => t('Please enter message that you want to leave us')
+	);
+	
+	$form['submit'] = array(
+	'#type' => 'submit',
+	'#value' => t('Add feedback')
+	);
+	
+	return $form;
+}
+
+function form_feedback_form_submit($form, &$form_state) {
+	if(variable_get('welcomemessage_email', 0)) {
+		drupal_mail('bulwers_welcomemessage', 'bulwers_welcomemessage_mail'
+		, 'wojtek.warwas@gmail.com', language_default());
+	}
+	
+	$id = db_insert('feedback')
+		->fields(array(
+		'author' => $form_state['values']['author'],
+		'message' => $form_state['values']['message'],
+		))
+		->execute();
+	drupal_set_message(t('Your feedback has been added'));
+}
+
+function bulwers_welcomemessage_mail($key, &$message, $params) {
+	
+	switch($key) {
+		case 'bulwers_welcomemessage_mail':
+			$message['subject'] = t('New feedback');
+			$message['body'][] = t('Check for new feedback');
+			
+			break;
+	}
+}
+
+function bulwers_welcomemessage_admin_form($form, &$form_state) {
+	$form['welcomemessage_email'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Enable feedback mails'),
+		'#default_value' => variable_get('welcomemessage_email', 0),
+	);
+	
+	return system_settings_form($form);
+}
+ 
+function bulwers_welcomemessage_block_info() {
+  $blocks['bulwers_welcomemessage'] = array(
+    'info' => t('Bulwers welcome message'),
+  );
+  
+  return $blocks;
+}
+
+function bulwers_welcomemessage_block_view($delta = '') {
+  // This example is adapted from node.module.
+  $block = array();
+
+  switch ($delta) {
+    case 'bulwers_welcomemessage':
+      $block['subject'] = t('Welcome!');
+      $block['content'] = "Witaj na stronie zespołu Bulwers <br/> <a href=/form-feedback>Podzeil się z nami Twoją opinią</a>";
+      break;
+	}
+	return $block;
+
+}

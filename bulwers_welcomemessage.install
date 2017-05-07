@@ -1,0 +1,32 @@
+<?php
+
+function bulwers_welcomemessage_schema() {
+  $schema['feedback'] = array(
+    // Example (partial) specification for table "node".
+    'description' => 'The base table for feedback.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a feedback.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'message' => array(
+        'description' => 'Feedback message',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+	  'author' => array(
+        'description' => 'Author',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
